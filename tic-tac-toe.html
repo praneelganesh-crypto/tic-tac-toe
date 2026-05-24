@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tic-Tac-Toe</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #1a1a1f;
+      color: #eaeaea;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    h1 {
+      font-weight: 300;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+
+    #status {
+      font-size: 1.2rem;
+      margin-bottom: 24px;
+      min-height: 1.5em;
+    }
+
+    #board {
+      display: grid;
+      grid-template-columns: repeat(3, 110px);
+      grid-template-rows: repeat(3, 110px);
+      gap: 8px;
+    }
+
+    .cell {
+      background: #2a2a32;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.5rem;
+      font-weight: 300;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease;
+      user-select: none;
+    }
+
+    .cell:hover:not(.taken) {
+      background: #353540;
+      transform: scale(1.03);
+    }
+
+    .cell.x { color: #6cb6ff; }
+    .cell.o { color: #ff7a90; }
+
+    .cell.winning {
+      background: #2d4a3e;
+      box-shadow: 0 0 12px rgba(108, 220, 150, 0.5);
+    }
+
+    #reset {
+      margin-top: 28px;
+      padding: 10px 24px;
+      font-size: 1rem;
+      background: transparent;
+      color: #eaeaea;
+      border: 1px solid #555;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    #reset:hover {
+      background: #2a2a32;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tic-Tac-Toe</h1>
+  <div id="status">X's turn</div>
+  <div id="board"></div>
+  <button id="reset">New Game</button>
+
+  <script>
+    const WIN_LINES = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+      [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+      [0, 4, 8], [2, 4, 6],            // diagonals
+    ];
+
+    let board = ["", "", "", "", "", "", "", "", ""];
+    let currentPlayer = "X";
+    let gameOver = false;
+
+    const boardEl = document.getElementById("board");
+    const statusEl = document.getElementById("status");
+    const resetBtn = document.getElementById("reset");
+
+    function render() {
+      boardEl.innerHTML = "";
+      board.forEach((value, index) => {
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        if (value) {
+          cell.classList.add("taken");
+          cell.classList.add(value.toLowerCase());
+          cell.textContent = value;
+        }
+        cell.addEventListener("click", () => handleClick(index));
+        boardEl.appendChild(cell);
+      });
+    }
+
+    function handleClick(index) {
+      if (gameOver || board[index] !== "") return;
+
+      board[index] = currentPlayer;
+
+      const winningLine = findWinningLine();
+      if (winningLine) {
+        gameOver = true;
+        statusEl.textContent = `${currentPlayer} wins!`;
+        render();
+        highlightWinner(winningLine);
+        return;
+      }
+
+      if (board.every(cell => cell !== "")) {
+        gameOver = true;
+        statusEl.textContent = "It's a draw!";
+        render();
+        return;
+      }
+
+      currentPlayer = currentPlayer === "X" ? "O" : "X";
+      statusEl.textContent = `${currentPlayer}'s turn`;
+      render();
+    }
+
+    function findWinningLine() {
+      for (const line of WIN_LINES) {
+        const [a, b, c] = line;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          return line;
+        }
+      }
+      return null;
+    }
+
+    function highlightWinner(line) {
+      const cells = boardEl.children;
+      line.forEach(i => cells[i].classList.add("winning"));
+    }
+
+    function resetGame() {
+      board = ["", "", "", "", "", "", "", "", ""];
+      currentPlayer = "X";
+      gameOver = false;
+      statusEl.textContent = "X's turn";
+      render();
+    }
+
+    resetBtn.addEventListener("click", resetGame);
+    render();
+  </script>
+</body>
+</html>
